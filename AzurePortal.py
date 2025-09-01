@@ -122,5 +122,8 @@ New-AzVM -ResourceGroupName $rg -Location $loc -VM $vmConfig
 
 if __name__ == "__main__":
     root = tk.Tk()
+    root.geometry("600x500")
+    root.minsize(500, 400)
+    root.maxsize(1000, 800)
     app = AzureVMGui(root)
     root.mainloop()
