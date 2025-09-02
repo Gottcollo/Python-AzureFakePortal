@@ -72,45 +72,45 @@ class AzureVMGui:
 
         # PowerShell Script
         script = f"""
-# Azure VM Deployment Script
-param()
+        # Azure VM Deployment Script
+        param()
 
-$rg = "{data['Resource Group']}"
-$loc = "{data['Region']}"
-$vmName = "{data['VM Name']}"
-$vmSize = "{data['VM Size (SKU)']}"
-$vnetCidr = "{data['VNet CIDR']}"
-$subnetCidr = "{data['Subnet CIDR']}"
-$adminUser = "{data['Admin Username']}"
-$adminPass = ConvertTo-SecureString "{data['Admin Password']}" -AsPlainText -Force
+        $rg = "{data['Resource Group']}"
+        $loc = "{data['Region']}"
+        $vmName = "{data['VM Name']}"
+        $vmSize = "{data['VM Size (SKU)']}"
+        $vnetCidr = "{data['VNet CIDR']}"
+        $subnetCidr = "{data['Subnet CIDR']}"
+        $adminUser = "{data['Admin Username']}"
+        $adminPass = ConvertTo-SecureString "{data['Admin Password']}" -AsPlainText -Force
 
-New-AzResourceGroup -Name $rg -Location $loc
+        New-AzResourceGroup -Name $rg -Location $loc
 
-# VNet + Subnet
-$vnet = New-AzVirtualNetwork -Name "$vmName-vnet" -ResourceGroupName $rg -Location $loc -AddressPrefix $vnetCidr
-Add-AzVirtualNetworkSubnetConfig -Name "$vmName-subnet" -AddressPrefix $subnetCidr -VirtualNetwork $vnet | Set-AzVirtualNetwork
+        # VNet + Subnet
+        $vnet = New-AzVirtualNetwork -Name "$vmName-vnet" -ResourceGroupName $rg -Location $loc -AddressPrefix $vnetCidr
+        Add-AzVirtualNetworkSubnetConfig -Name "$vmName-subnet" -AddressPrefix $subnetCidr -VirtualNetwork $vnet | Set-AzVirtualNetwork
 
-# Public IP
-$pip = New-AzPublicIpAddress -Name "$vmName-pip" -ResourceGroupName $rg -Location $loc -AllocationMethod Dynamic -Sku Standard
+        # Public IP
+        $pip = New-AzPublicIpAddress -Name "$vmName-pip" -ResourceGroupName $rg -Location $loc -AllocationMethod Dynamic -Sku Standard
 
-# NSG mit RDP Regel
-$nsg = New-AzNetworkSecurityGroup -ResourceGroupName $rg -Location $loc -Name "$vmName-nsg"
-$nsg | Add-AzNetworkSecurityRuleConfig -Name "AllowRDP" -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow | Set-AzNetworkSecurityGroup
+        # NSG mit RDP Regel
+        $nsg = New-AzNetworkSecurityGroup -ResourceGroupName $rg -Location $loc -Name "$vmName-nsg"
+        $nsg | Add-AzNetworkSecurityRuleConfig -Name "AllowRDP" -Protocol Tcp -Direction Inbound -Priority 1000 -SourceAddressPrefix * -SourcePortRange * -DestinationAddressPrefix * -DestinationPortRange 3389 -Access Allow | Set-AzNetworkSecurityGroup
 
-# NIC
-$subnet = Get-AzVirtualNetworkSubnetConfig -Name "$vmName-subnet" -VirtualNetwork $vnet
-$nic = New-AzNetworkInterface -Name "$vmName-nic" -ResourceGroupName $rg -Location $loc -Subnet $subnet -PublicIpAddress $pip -NetworkSecurityGroup $nsg
+        # NIC
+        $subnet = Get-AzVirtualNetworkSubnetConfig -Name "$vmName-subnet" -VirtualNetwork $vnet
+        $nic = New-AzNetworkInterface -Name "$vmName-nic" -ResourceGroupName $rg -Location $loc -Subnet $subnet -PublicIpAddress $pip -NetworkSecurityGroup $nsg
 
-# VM Config
-$cred = New-Object System.Management.Automation.PSCredential($adminUser, $adminPass)
-$vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize |
-    Set-AzVMOperatingSystem -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate |
-    Set-AzVMSourceImage -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2025-datacenter-azure-edition" -Version "latest" |
-    Add-AzVMNetworkInterface -Id $nic.Id |
-    Set-AzVMOSDisk -CreateOption FromImage -StorageAccountType StandardSSD_LRS
+        # VM Config
+        $cred = New-Object System.Management.Automation.PSCredential($adminUser, $adminPass)
+        $vmConfig = New-AzVMConfig -VMName $vmName -VMSize $vmSize |
+        Set-AzVMOperatingSystem -Windows -ComputerName $vmName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate |
+        Set-AzVMSourceImage -PublisherName "MicrosoftWindowsServer" -Offer "WindowsServer" -Skus "2025-datacenter-azure-edition" -Version "latest" |
+        Add-AzVMNetworkInterface -Id $nic.Id |
+        Set-AzVMOSDisk -CreateOption FromImage -StorageAccountType StandardSSD_LRS
 
-New-AzVM -ResourceGroupName $rg -Location $loc -VM $vmConfig
-"""
+        New-AzVM -ResourceGroupName $rg -Location $loc -VM $vmConfig
+        """
 
         # Speicherort: Desktop des aktuellen Benutzers
         desktop = os.path.join(os.path.expanduser("~"), "Desktop")
